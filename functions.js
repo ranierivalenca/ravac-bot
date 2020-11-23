@@ -34,7 +34,7 @@ const getMessageFrom = (textBasedChannel, user, time) => {
 
 
 
-const timedInteraction = async (ch, user, messageCollected, timedOut) => {
+const timedInteraction = async (ch, user, messageCollected, timedOutOrError) => {
     let validAnswer = false
     let waitTime = INITIAL_WAIT_TIME
     while (await !validAnswer) {
@@ -46,7 +46,7 @@ const timedInteraction = async (ch, user, messageCollected, timedOut) => {
             expired = true
         })
         if (!validAnswer) {
-            timedOut(expired)
+            timedOutOrError(expired)
         }
     }
 }
