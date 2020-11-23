@@ -146,7 +146,7 @@ const getCourseAndSemester = async (ch, user) => {
 }
 
 
-module.exports = (user) => {
+module.exports = (user, guild) => {
     user.createDM().then(async ch => {
 
         await welcomeAndGetName(ch, user)
@@ -154,5 +154,11 @@ module.exports = (user) => {
         await getCourseAndSemester(ch, user)
 
         console.log([realName, course, semester])
+        let member = guild.members.resolve(user.id)
+        let course_semester = `${course} ${semester}`
+        if (course == null) {
+            course_semester = 'EXTERNO'
+        }
+        member.setNickname(`${course_semester} - ${realName}`)
     })
 }
