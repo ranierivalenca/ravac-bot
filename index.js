@@ -11,8 +11,8 @@ client.on('ready', () => {
     client.on('message', (message) => {
         if (!(message.content == '!welcome'))
             return
-        welcome(message.author)
-
+        let guild = client.guilds.resolve(config.guildId)
+        welcome(message.author, guild)
     })
 
     client.on('guildMemberAdd', (member) => {
