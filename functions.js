@@ -10,6 +10,7 @@ const delayedSend = (textBasedChannel, message, time) => {
         setTimeout(() => {
             textBasedChannel.send(message)
             textBasedChannel.stopTyping()
+            console.log(`SENT: ${message}`)
             res(message)
         }, time)
     })
@@ -25,8 +26,10 @@ const getMessageFrom = (textBasedChannel, user, time) => {
     let collector = textBasedChannel.createMessageCollector(m => m.author.id == user.id, options)
     return new Promise((res, rej) => {
         collector.on('collect', m => {
+            console.log(`COLLECTED: ${m.content}`)
             res(m)
         }).on('end', () => {
+            console.log(`TIMEOUT`)
             rej()
         })
     })
@@ -40,12 +43,13 @@ const timedInteraction = async (ch, user, messageCollected, timedOutOrError) => 
     while (await !validAnswer) {
         let expired = false
         await getMessageFrom(ch, user, waitTime).then(async m => {
-            validAnswer = messageCollected(m)
+            validAnswer = await messageCollected(m)
         }).catch(() => {
             waitTime *= 2
             expired = true
         })
-        if (!validAnswer) {
+        if (await !validAnswer) {
+            console.log('invalid answer')
             timedOutOrError(expired)
         }
     }
