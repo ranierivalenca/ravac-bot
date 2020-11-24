@@ -4,13 +4,14 @@ const {
     timedInteraction
 } = require('./functions')
 
+const {studentRoleId} = require('./.config.json')
+
 const Discord = require('discord.js')
 
 
-let realName, course, semester
-
-
 const welcomeAndGetName = async (ch, user) => {
+    let realName
+
     // https://dev.to/aumayeung/where-s-the-sleep-function-in-javascript-bk8
     let welcomeEmbed = new Discord.MessageEmbed({
         'color': '#ff9900',
@@ -19,7 +20,7 @@ const welcomeAndGetName = async (ch, user) => {
         'footer': {
             'text': 'by Ranieri Valença'
         }
-    }).setTimestamp()
+    })
 
     await delayedSend(ch, welcomeEmbed)
     await delayedSend(
@@ -35,12 +36,12 @@ const welcomeAndGetName = async (ch, user) => {
             realName = m.content
             return true
         },
-        async () => {
-            await delayedSend(
+        expired => {
+            return delayedSend(
                 ch,
                 new Discord.MessageEmbed({
                     'title': `Oi, ${user.username}... espero que você não esteja me ignorando :cry:`,
-                    'description': 'Preciso saber teu nome e outras informações pra poder te dar as autorizações necessárias aqui aqui no servidor... Diz teu nome aí por favor ;)'
+                    'description': 'Preciso saber seu nome e outras informações pra poder te dar as autorizações necessárias aqui aqui no servidor... Diz teu nome aí por favor ;)'
                 })
             )
         }
@@ -48,7 +49,9 @@ const welcomeAndGetName = async (ch, user) => {
     return realName
 }
 
-const getCourseAndSemester = async (ch, user) => {
+const getCourseAndSemester = async (ch, user, realName) => {
+    let course, semester
+
     await delayedSend(
         ch,
         new Discord.MessageEmbed({
@@ -82,27 +85,26 @@ const getCourseAndSemester = async (ch, user) => {
             }
             return false
         },
-        async expired => {
-            await delayedSend(
-                ch,
-                new Discord.MessageEmbed({
-                    'title': expired ? `Oi, ${realName}... espero que você não esteja me ignorando :cry:` : 'Eita, não entendi tua resposta... :sweat:',
-                    'description': 'Eu preciso saber se vc estuda no **Campus Igarassu** do **IFPE** :pleading_face:',
-                    'fields': [
-                        {
-                            'name': 'sim',
-                            'value': 'digite `s` ou `sim`',
-                            'inline': true
-                        },
-                        {
-                            'name': 'não',
-                            'value': 'digite `n` ou `não`',
-                            'inline': true
-                        }
-                    ]
-                })
-            )
-        }
+        expired => delayedSend(
+            ch,
+            new Discord.MessageEmbed({
+                'title': expired ? `Oi, ${realName}... espero que você não esteja me ignorando :cry:` : 'Eita, não entendi tua resposta... :sweat:',
+                'description': 'Eu preciso saber se vc estuda no **Campus Igarassu** do **IFPE** :pleading_face:',
+                'fields': [
+                    {
+                        'name': 'sim',
+                        'value': 'digite `s` ou `sim`',
+                        'inline': true
+                    },
+                    {
+                        'name': 'não',
+                        'value': 'digite `n` ou `não`',
+                        'inline': true
+                    }
+                ]
+            })
+        )
+
     )
 
 
@@ -156,32 +158,31 @@ const getCourseAndSemester = async (ch, user) => {
             }
             return true
         },
-        async expired => {
-            await delayedSend(
-                ch,
-                new Discord.MessageEmbed({
-                    'title': expired ? `Oi, ${realName}... espero que você não esteja me ignorando :cry:` : 'Eita, não entendi tua resposta... :sweat:',
-                    'description': 'Preciso saber qual teu curso no Campus pra continuar esse processo :pleading_face:',
-                    'fields': [
-                        {
-                            'name': 'Técnico em Informática para Internet',
-                            'value': 'digite `ipi`',
-                            'inline': true
-                        },
-                        {
-                            'name': 'Tecnológico em Sistemas para Internet',
-                            'value': 'digite `tsi`',
-                            'inline': true
-                        },
-                        {
-                            'name': 'Outro curso',
-                            'value': 'digite `0`',
-                            'inline': true
-                        }
-                    ]
-                })
-            )
-        }
+        expired => delayedSend(
+            ch,
+            new Discord.MessageEmbed({
+                'title': expired ? `Oi, ${realName}... espero que você não esteja me ignorando :cry:` : 'Eita, não entendi tua resposta... :sweat:',
+                'description': 'Preciso saber qual teu curso no Campus pra continuar esse processo :pleading_face:',
+                'fields': [
+                    {
+                        'name': 'Técnico em Informática para Internet',
+                        'value': 'digite `ipi`',
+                        'inline': true
+                    },
+                    {
+                        'name': 'Tecnológico em Sistemas para Internet',
+                        'value': 'digite `tsi`',
+                        'inline': true
+                    },
+                    {
+                        'name': 'Outro curso',
+                        'value': 'digite `0`',
+                        'inline': true
+                    }
+                ]
+            })
+        )
+
     )
 
     if (course == null) {
@@ -209,59 +210,73 @@ const getCourseAndSemester = async (ch, user) => {
             semester = m.content
             return true
         },
-        async expired => {
-            await delayedSend(
-                ch,
-                new Discord.MessageEmbed({
-                    'title': expired ? `Oi, ${realName}... espero que você não esteja me ignorando :cry:` : 'Eita, não entendi tua resposta... :sweat:',
-                    'description': 'Preciso saber o ano e semestre que vc ingressou no curso no formato `ano.semestre`, tipo assim:',
-                    'fields': [
-                        {'name': 'Segundo semestre (segunda entrada) de 2020', 'value': 'digita `2020.2`', 'inline': true},
-                        {'name': 'Primeiro semestre de 2020', 'value': 'digita `2020.1`', 'inline': true},
-                        {'name': 'Segundo semestre de 2019', 'value': 'digita `2019.2`', 'inline': true},
-                        {'name': 'Primeiro semestre de 2019', 'value': 'digita `2019.1`', 'inline': true},
-                        {'name': 'Segundo semestre de 2018', 'value': 'digita `2018.2`', 'inline': true},
-                        {'name': '...', 'value': 'digita `ANO.ENTRADA`', 'inline': true},
-                    ]
-                })
-            )
-        }
+        expired => delayedSend(
+            ch,
+            new Discord.MessageEmbed({
+                'title': expired ? `Oi, ${realName}... espero que você não esteja me ignorando :cry:` : 'Eita, não entendi tua resposta... :sweat:',
+                'description': 'Preciso saber o ano e semestre que vc ingressou no curso no formato `ano.semestre`, tipo assim:',
+                'fields': [
+                    {'name': 'Segundo semestre (segunda entrada) de 2020', 'value': 'digita `2020.2`', 'inline': true},
+                    {'name': 'Primeiro semestre de 2020', 'value': 'digita `2020.1`', 'inline': true},
+                    {'name': 'Segundo semestre de 2019', 'value': 'digita `2019.2`', 'inline': true},
+                    {'name': 'Primeiro semestre de 2019', 'value': 'digita `2019.1`', 'inline': true},
+                    {'name': 'Segundo semestre de 2018', 'value': 'digita `2018.2`', 'inline': true},
+                    {'name': '...', 'value': 'digita `ANO.ENTRADA`', 'inline': true},
+                ]
+            })
+        )
+
     )
+    return [course, semester]
 
 }
 
 
 module.exports = (user, guild) => {
     user.createDM().then(async ch => {
+        // console.log(guild.roles.resolve(studentRoleId))
 
-        await welcomeAndGetName(ch, user)
+        let realName = await welcomeAndGetName(ch, user)
+        if (!realName)
+            return
 
-        await getCourseAndSemester(ch, user)
+        let [course, semester] = await getCourseAndSemester(ch, user, realName)
 
         console.log([realName, course, semester])
-        let member = guild.members.resolve(user.id)
+
         let course_semester = `${course} ${semester}`
-        if (course == null) {
+        if (!course) {
             course_semester = 'EXTERNO'
         }
+
+        let member = guild.members.resolve(user.id)
         member.setNickname(`${course_semester} - ${realName}`)
+        let studentRole = guild.roles.cache.find(r => r.name == 'Student')
+        if (studentRole)
+            member.roles.add(studentRole).catch(() => {
+
+            })
+        let finalMessageFields = []
+        if (course) {
+            finalMessageFields = [
+                {
+                    'name': 'Curso',
+                    'value': course,
+                    'inline': true
+                },
+                {
+                    'name': 'Semestre de ingresso',
+                    'value': semester,
+                    'inline': true
+                }
+            ]
+        }
         delayedSend(
             ch,
             new Discord.MessageEmbed({
                 'author': {'name': 'Tudo certo!'},
                 'title': realName,
-                'fields': [
-                    {
-                        'name': 'Curso',
-                        'value': course,
-                        'inline': true
-                    },
-                    {
-                        'name': 'Semestre de ingresso',
-                        'value': semester,
-                        'inline': true
-                    }
-                ],
+                'fields': finalMessageFields,
                 'footer': {
                     'text': 'Se precisar de ajuda, digite `!ajuda`. Se precisar recomeçar esse processo de configuração, digite `!welcome`'
                 }
