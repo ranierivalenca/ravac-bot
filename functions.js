@@ -1,19 +1,21 @@
 const {CHARS_PER_SECOND, INITIAL_WAIT_TIME} = require('./global.config.json')
 
 
-const delayedSend = (textBasedChannel, message, time) => {
+const wait = ms => new Promise(res => setTimeout(res, ms))
+
+const delayedSend = async (textBasedChannel, message, time) => {
     time = time || (message.length / CHARS_PER_SECOND)
+    console.log(message.length, time)
     time *= 1000
 
     textBasedChannel.startTyping()
-    return new Promise((res, rej) => {
-        setTimeout(() => {
-            textBasedChannel.send(message)
-            textBasedChannel.stopTyping()
-            console.log(`SENT: ${message}`)
-            res(message)
-        }, time)
+    await wait(time)
+    textBasedChannel.stopTyping()
+
+    return textBasedChannel.send(message).catch(() => {
+        console.log("error")
     })
+
 }
 
 
