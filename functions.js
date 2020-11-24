@@ -24,14 +24,14 @@ const getMessageFrom = (textBasedChannel, user, time) => {
     let options = {max: 1}
     if (typeof time == 'number')
         options['time'] = time
-    console.log(options)
+    console.log(`[DEBUG] waiting interaction from ${user.username} for ${time}ms`)
     let collector = textBasedChannel.createMessageCollector(m => m.author.id == user.id, options)
     return new Promise((res, rej) => {
         collector.on('collect', m => {
-            console.log(`COLLECTED: ${m.content}`)
+            console.log(`[DEBUG] collected from ${user.username}: ${m.content}`)
             res(m)
         }).on('end', () => {
-            console.log(`TIMEOUT`)
+            console.log(`[DEBUG] ${user.username}: timed out`)
             rej()
         })
     })
@@ -42,7 +42,8 @@ const getMessageFrom = (textBasedChannel, user, time) => {
 const timedInteraction = async (ch, user, messageCollected, timedOutOrError) => {
     let validAnswer = false
     let waitTime = INITIAL_WAIT_TIME
-    while (await !validAnswer) {
+    let halt = false
+    while (await !validAnswer && !halt) {
         let expired = false
         await getMessageFrom(ch, user, waitTime).then(async m => {
             validAnswer = await messageCollected(m)
@@ -51,8 +52,12 @@ const timedInteraction = async (ch, user, messageCollected, timedOutOrError) => 
             expired = true
         })
         if (await !validAnswer) {
-            console.log('invalid answer')
-            timedOutOrError(expired)
+            expired ? '' : console.log('INVALID ANSWER')
+            await timedOutOrError(expired)
+                .catch(e => {
+                    console.log('erro')
+                    halt = true
+                })
         }
     }
 }
